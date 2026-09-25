@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-microservice
+  namespace: llm-microservice
+  labels:
+    app: llm-microservice
+    backstage.io/kubernetes-id: llm-microservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-microservice
+  template:
+    metadata:
+      labels:
+        app: llm-microservice
+        backstage.io/kubernetes-id: llm-microservice
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: llm
+          image: ghcr.io/gusLopezC-DevOps/llm-microservice:latest
+          args: ["--priority", "cost-optimized"]
+          env:
+            - name: ROUTER_ENDPOINT
+              value: "http://finops-arbitrage-router.finops-arbitrage-router.svc.cluster.local:8080"
+            - name: ROUTER_PRIORITY
+              value: "cost-optimized"
+            - name: LOCAL_MODEL
+              value: "llama3.2:1b"
+            - name: SQLITE_PATH
+              value: "/data/llm-microservice.db"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 250m
+              memory: 192Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/llm
+              readOnly: true
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: llm-microservice-config
+        - name: data
+          emptyDir: {}

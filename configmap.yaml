@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-microservice-config
+  namespace: llm-microservice
+  labels:
+    app: llm-microservice
+    backstage.io/kubernetes-id: llm-microservice
+data:
+  config.yaml: |
+    router:
+      endpoint: http://finops-arbitrage-router.finops-arbitrage-router.svc.cluster.local:8080
+      priority: cost-optimized
+    local-model: llama3.2:1b
+    database:
+      path: /data/llm-microservice.db

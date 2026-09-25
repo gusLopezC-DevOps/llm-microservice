@@ -1,0 +1,37 @@
+# Zero-trust egress for the managed LLM service: only DNS and the Kong
+# service that fronts the FinOps arbitrage router. The router is the only
+# LLM dependency — the service never talks to Ollama or the managed fallback
+# directly, preserving the zero-trust decision surface.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: llm-microservice-egress
+  namespace: llm-microservice
+  labels:
+    app: llm-microservice
+spec:
+  podSelector:
+    matchLabels:
+      app: llm-microservice
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - to:
+        - podSelector:
+            matchLabels:
+              app: finops-arbitrage-router
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: finops-arbitrage-router
+      ports:
+        - protocol: TCP
+          port: 8080

@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: llm-microservice
+  description: Managed LLM service (Go + SQLite) arbitrated by the FinOps router
+  labels:
+    app: llm-microservice
+  tags:
+    - llm
+    - go
+    - mlops
+  annotations:
+    backstage.io/kubernetes-id: llm-microservice
+    backstage.io/kubernetes-namespace: llm-microservice
+spec:
+  type: service
+  lifecycle: production
+  owner: group:mlops-team
+  system: mlops-platform
+  dependsOn:
+    - component:finops-arbitrage-router

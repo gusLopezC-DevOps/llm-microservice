@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: llm-microservice
+  namespace: llm-microservice
+  labels:
+    app: llm-microservice
+    backstage.io/kubernetes-id: llm-microservice
+spec:
+  ingressClassName: kong
+  rules:
+    - host: llm-microservice.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: llm-microservice
+                port:
+                  number: 8080
