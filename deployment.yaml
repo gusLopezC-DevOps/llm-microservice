@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llm-microservice
-  namespace: llm-microservice
+  name: managed-llm-service
+  namespace: managed-llm-service
   labels:
-    app: llm-microservice
-    backstage.io/kubernetes-id: llm-microservice
+    app: managed-llm-service
+    backstage.io/kubernetes-id: managed-llm-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: llm-microservice
+      app: managed-llm-service
   template:
     metadata:
       labels:
-        app: llm-microservice
-        backstage.io/kubernetes-id: llm-microservice
+        app: managed-llm-service
+        backstage.io/kubernetes-id: managed-llm-service
     spec:
       securityContext:
         runAsNonRoot: true
@@ -24,18 +24,18 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: llm
-          image: ghcr.io/gusLopezC-DevOps/llm-microservice:latest
-          args: ["--priority", "cost-optimized"]
+        - name: server
+          image: python:3.12-slim
+          command: ["python", "/app/server.py"]
           env:
             - name: ROUTER_ENDPOINT
               value: "http://finops-arbitrage-router.finops-arbitrage-router.svc.cluster.local:8080"
             - name: ROUTER_PRIORITY
-              value: "cost-optimized"
+              value: "max-performance"
             - name: LOCAL_MODEL
               value: "llama3.2:1b"
             - name: SQLITE_PATH
-              value: "/data/llm-microservice.db"
+              value: "/data/managed-llm-service.db"
           ports:
             - name: http
               containerPort: 8080
@@ -64,14 +64,14 @@ spec:
               cpu: 250m
               memory: 192Mi
           volumeMounts:
-            - name: config
-              mountPath: /etc/llm
+            - name: app
+              mountPath: /app
               readOnly: true
             - name: data
               mountPath: /data
       volumes:
-        - name: config
+        - name: app
           configMap:
-            name: llm-microservice-config
+            name: managed-llm-service-config
         - name: data
           emptyDir: {}
