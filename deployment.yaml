@@ -25,7 +25,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: llm
-          image: docker.io/guslopezc/llm-microservice:ci
+          image: docker.io/guslopezc/llm-microservice:b7c0f98d1e2d163feb2f559d58a7419a48c31494
           env:
             - name: ROUTER_ENDPOINT
               value: "http://finops-arbitrage-router.finops-arbitrage-router.svc.cluster.local:8080"
